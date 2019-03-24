@@ -1,0 +1,16 @@
+---
+language: bash
+env:
+  - SRC=prometheus/prometheus        DST=cloudalchemy/ansible-prometheus
+  - SRC=prometheus/alertmanager      DST=cloudalchemy/ansible-alertmanager
+  - SRC=prometheus/node_exporter     DST=cloudalchemy/ansible-node-exporter
+  - SRC=prometheus/blackbox_exporter DST=cloudalchemy/ansible-blackbox-exporter
+  - SRC=prometheus/mysqld_exporter   DST=cloudalchemy/ansible-mysqld-exporter
+  - SRC=prometheus/snmp_exporter     DST=cloudalchemy/ansible-snmp-exporter
+  - SRC=prometheus/pushgateway       DST=cloudalchemy/ansible-pushgateway
+
+script:
+  - bash autocommiter.sh
+branches:
+  only:
+    - master
