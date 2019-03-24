@@ -49,7 +49,9 @@ curl https://api.github.com/users/cloudalchemy/repos 2>/dev/null | jq '.[].name'
 	cp -f ../skeleton/test-requirements.txt ./
 	cp -f ../skeleton/.travis/releaser.sh ./.travis/releaser.sh
 	if [ -n "$(git status --porcelain)" ]; then
-		if ! git push "https://${GITHUB_TOKEN}:@github.com/cloudalchemy/${REPO}" --set-upstream skeleton; then
+		git add .
+		git commit -m ':robot: synchronize files from cloudalchemy/skeleton'
+		if git push "https://${GITHUB_TOKEN}:@github.com/cloudalchemy/${REPO}" --set-upstream skeleton; then
 			hub pull-request -h skeleton -F- <<<"Synchronize files from cloudalchemy/skeleton.
 
 One of files which should be in sync across all cloudalchemy repos was changed either here or in cloudalchemy/skeleton. 
