@@ -26,8 +26,7 @@ echo -e "\e[32mNew ${SRC} version is: ${VERSION}\e[0m"
 
 # Download destination repository
 git clone "https://github.com/${DST}" "${DST}"
-grep "_version: ${VERSION}" "${DST}/defaults/main.yml"
-if [ $? -eq 0 ]; then
+if grep "_version: ${VERSION}" "${DST}/defaults/main.yml"; then
     echo -e "\e[32mNewest version is used.\e[0m"
     exit 0
 fi
@@ -50,16 +49,15 @@ git checkout -b autoupdate
 git add "defaults/main.yml" "README.md"
 git commit -m ':tada: automated upstream release update'
 echo -e "\e[32mPushing to autoupdate branch in ${DST}\e[0m"
-git push "https://${GITHUB_TOKEN}:@github.com/${DST}" --set-upstream autoupdate
-if [ $? -ne 0 ]; then
+if git push "https://${GITHUB_TOKEN}:@github.com/${DST}" --set-upstream autoupdate ; then
     echo -e "\e[33mBranch is already on remote.\e[0m"
     exit 0
 fi
-REPO="$(echo $SRC | awk -F '/' '{print $2}' )"
+REPO="$(echo "$SRC" | awk -F '/' '{print $2}' )"
 export GITHUB_TOKEN=$GITHUB_TOKEN
 hub pull-request -h autoupdate -F- <<< "New ${REPO} upstream release!
 
-Guys at [${SRC}](https://github.com/${SRC}) released new software version - **${VERSION}**! This PR updates code to bring that version into this repository.
+Devs at [${SRC}](https://github.com/${SRC}) released new software version - **${VERSION}**! This PR updates code to bring that version into this repository.
 
 This is an automated PR, if you don't want to receive those, please contact @paulfantom."
 
