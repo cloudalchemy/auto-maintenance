@@ -33,14 +33,6 @@ fi
 sed -i "s/_version:.*$/_version: ${VERSION}/" "${DST}/defaults/main.yml"
 sed -i -r "s/_version.*[0-9].[0-9].[0-9]/_version\` | ${VERSION}/" "${DST}/README.md"
 
-# Download hub
-HUB_VERSION="2.5.0"
-curl -sOL "https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz"
-tar -xf "hub-linux-amd64-${HUB_VERSION}.tgz"
-cp "hub-linux-amd64-${HUB_VERSION}/bin/hub" ./
-chmod +x hub
-export PATH="${PATH}:$(pwd)"
-
 # Push new version
 cd "${DST}"
 git config user.email "${GIT_MAIL}"
@@ -53,12 +45,11 @@ if git push "https://${GITHUB_TOKEN}:@github.com/${DST}" --set-upstream autoupda
     echo -e "\e[33mBranch is already on remote.\e[0m"
     exit 129
 fi
-REPO="$(echo "$SRC" | awk -F '/' '{print $2}' )"
-export GITHUB_TOKEN=$GITHUB_TOKEN
-hub pull-request -h autoupdate -F- <<< "New ${REPO} upstream release!
 
-Devs at [${SRC}](https://github.com/${SRC}) released new software version - **${VERSION}**! This PR updates code to bring that version into this repository.
+PAYLOAD="{\"title\": \"New ${SRC} upstream release!\",
+          \"base\": \"master\",
+          \"head\": \"autoupdate\",
+          \"body\": \"Devs at [${SRC}](https://github.com/${SRC}) released new software version - **${VERSION}**! This PR updates code to bring that version into this repository.\n\nThis is an automated PR, if you don't want to receive those, please contact @paulfantom.\"}"
 
-This is an automated PR, if you don't want to receive those, please contact @paulfantom."
-
+curl -u "$GIT_USER:$GITHUB_TOKEN" -X POST -d "$PAYLOAD" "https://api.github.com/repos/${DST}/pulls"
 echo -e "\e[32mPull Request with new version is ready\e[0m"

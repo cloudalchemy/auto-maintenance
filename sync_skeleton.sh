@@ -4,6 +4,10 @@ set -eo pipefail
 
 GIT_MAIL="cloudalchemybot@gmail.com"
 GIT_USER="cloudalchemybot"
+PAYLOAD='{"title":"Synchronize files from cloudalchemy/skeleton",
+          "base":"master",
+          "head":"skeleton",
+          "body":"One or more files which should be in sync across cloudalchemy repos were changed either here or in [cloudalchemy/skeleton](https://github.com/cloudalchemy/skeleton).\nThis PR propagates files from [cloudalchemy/skeleton](https://github.com/cloudalchemy/skeleton). If something was changed here, please first modify skeleton repository.\n\nCC: @paulfantom."}'
 
 if [ -z "${GITHUB_TOKEN}" ]; then
 	echo -e "\e[31mGitHub token (GITHUB_TOKEN) not set. Terminating.\e[0m"
@@ -14,15 +18,6 @@ fi
 
 git config --global user.email "${GIT_MAIL}"
 git config --global user.name "${GIT_USER}"
-if ! command -v hub 1>/dev/null 2>&1; then
-	# Download hub
-	HUB_VERSION="2.10.0"
-	curl -sOL "https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz"
-	tar -xf "hub-linux-amd64-${HUB_VERSION}.tgz"
-	cp "hub-linux-amd64-${HUB_VERSION}/bin/hub" ./
-	chmod +x hub
-	PATH="${PATH}:$(pwd)"
-fi
 
 git clone "https://github.com/cloudalchemy/skeleton.git" "skeleton"
 
@@ -52,13 +47,7 @@ curl https://api.github.com/users/cloudalchemy/repos 2>/dev/null | jq '.[].name'
 		git add .
 		git commit -m ':robot: synchronize files from cloudalchemy/skeleton'
 		if git push "https://${GITHUB_TOKEN}:@github.com/cloudalchemy/${REPO}" --set-upstream skeleton; then
-			hub pull-request -h skeleton -F- <<<"Synchronize files from cloudalchemy/skeleton.
-
-One of files which should be in sync across all cloudalchemy repos was changed either here or in cloudalchemy/skeleton. 
-This PR propagates files from cloudalchemy/skeleton. If something was changed here, please first modify repo skeleton.
-
-CC: @paulfantom."
-
+			curl -u "$GIT_USER:$GITHUB_TOKEN" -X POST -d "$PAYLOAD" "https://api.github.com/repos/cloudalchemy/${REPO}/pulls"
 		fi
 	fi
 done
