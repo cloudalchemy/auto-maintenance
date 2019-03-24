@@ -1,23 +1,23 @@
 #!/bin/bash
 
-set -o pipefail
+set -eo pipefail
 
 GIT_MAIL="cloudalchemybot@gmail.com"
 GIT_USER="cloudalchemybot"
 
 if [ -z "${GITHUB_TOKEN}" ]; then
     echo -e "\e[31mGitHub token (GITHUB_TOKEN) not set. Terminating.\e[0m"
-    exit 1
+    exit 128
 fi
 
 if [ -z "${SRC}" ]; then
     echo -e "\e[31mNo source repository set (SRC). Terminating.\e[0m"
-    exit 1
+    exit 128
 fi
 
 if [ -z "${DST}" ]; then
     echo -e "\e[31mNo destination repository set (SRC). Terminating.\e[0m"
-    exit 1
+    exit 128
 fi
 
 # Get new version
@@ -51,7 +51,7 @@ git commit -m ':tada: automated upstream release update'
 echo -e "\e[32mPushing to autoupdate branch in ${DST}\e[0m"
 if git push "https://${GITHUB_TOKEN}:@github.com/${DST}" --set-upstream autoupdate ; then
     echo -e "\e[33mBranch is already on remote.\e[0m"
-    exit 0
+    exit 129
 fi
 REPO="$(echo "$SRC" | awk -F '/' '{print $2}' )"
 export GITHUB_TOKEN=$GITHUB_TOKEN
