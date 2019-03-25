@@ -21,7 +21,7 @@ if [ -z "${DST}" ]; then
 fi
 
 # Get new version
-VERSION="$(curl --silent "https://api.github.com/repos/${SRC}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | sed 's/v//')"
+VERSION="$(curl --retry 5 --silent "https://api.github.com/repos/${SRC}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | sed 's/v//')"
 echo -e "\e[32mNew ${SRC} version is: ${VERSION}\e[0m"
 
 # Download destination repository
@@ -51,5 +51,5 @@ PAYLOAD="{\"title\": \"New ${SRC} upstream release!\",
           \"head\": \"autoupdate\",
           \"body\": \"Devs at [${SRC}](https://github.com/${SRC}) released new software version - **${VERSION}**! This PR updates code to bring that version into this repository.\n\nThis is an automated PR, if you don't want to receive those, please contact @paulfantom.\"}"
 
-curl -u "$GIT_USER:$GITHUB_TOKEN" -X POST -d "$PAYLOAD" "https://api.github.com/repos/${DST}/pulls"
+curl --retry 3 -u "$GIT_USER:$GITHUB_TOKEN" -X POST -d "$PAYLOAD" "https://api.github.com/repos/${DST}/pulls"
 echo -e "\e[32mPull Request with new version is ready\e[0m"
