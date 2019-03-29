@@ -25,10 +25,6 @@ HERE=$(pwd)
 curl https://api.github.com/users/cloudalchemy/repos 2>/dev/null | jq '.[].name' | grep '^"ansible' | sed 's/"//g' | while read -r; do
 	REPO="$REPLY"
 	echo -e "\e[32m Anylyzing $REPO\e[0m"
-	# Exclude coredns as it is not finished yet
-	if [ "$REPO" == "ansible-coredns" ]; then
-		continue
-	fi
 
 	cd "$HERE"
 	git clone "https://github.com/cloudalchemy/$REPO.git" "$REPO"
