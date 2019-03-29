@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#set -eo pipefail
-set -e
+set -euo pipefail
 
 GIT_MAIL="cloudalchemybot@gmail.com"
 GIT_USER="cloudalchemybot"
