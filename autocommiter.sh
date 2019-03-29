@@ -41,7 +41,7 @@ git checkout -b autoupdate
 git add "defaults/main.yml" "README.md"
 git commit -m ':tada: automated upstream release update'
 echo -e "\e[32mPushing to autoupdate branch in ${DST}\e[0m"
-if ! git push -u autoupdate "https://${GITHUB_TOKEN}:@github.com/${DST}"; then
+if ! git push "https://${GITHUB_TOKEN}:@github.com/${DST}" --set-upstream autoupdate; then
     echo -e "\e[33mBranch is already on remote.\e[0m"
     exit 129
 fi
