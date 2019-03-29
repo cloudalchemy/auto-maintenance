@@ -51,5 +51,5 @@ PAYLOAD="{\"title\": \"New ${SRC} upstream release!\",
           \"head\": \"autoupdate\",
           \"body\": \"Devs at [${SRC}](https://github.com/${SRC}) released new software version - **${VERSION}**! This PR updates code to bring that version into this repository.\n\nThis is an automated PR, if you don't want to receive those, please contact @paulfantom.\"}"
 
-curl --retry 3 -u "$GIT_USER:$GITHUB_TOKEN" -X POST -d "$PAYLOAD" "https://api.github.com/repos/${DST}/pulls"
+curl --retry 3 --silent -u "$GIT_USER:$GITHUB_TOKEN" -X POST -d "$PAYLOAD" "https://api.github.com/repos/${DST}/pulls"
 echo -e "\e[32mPull Request with new version is ready\e[0m"
