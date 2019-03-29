@@ -22,7 +22,7 @@ if [ -z "${DST}" ]; then
 fi
 
 # Get new version
-VERSION="$(curl --retry 5 --silent "https://api.github.com/repos/${SRC}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | sed 's/v//')"
+VERSION="$(curl --retry 5 --silent "https://api.github.com/repos/${SRC}/releases/latest" | jq '.tag_name' | tr -d '"v')"
 echo -e "\e[32mNew ${SRC} version is: ${VERSION}\e[0m"
 
 # Download destination repository
