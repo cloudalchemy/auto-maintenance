@@ -21,7 +21,7 @@ if [ -z "${DST}" ]; then
 fi
 
 # Get new version
-VERSION="$(curl --retry 5 --silent "https://api.github.com/repos/${SRC}/releases/latest" | jq '.tag_name' | tr -d '"v')"
+VERSION="$(curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" "https://api.github.com/repos/${SRC}/releases/latest" | jq '.tag_name' | tr -d '"v')"
 echo -e "\e[32mNew ${SRC} version is: ${VERSION}\e[0m"
 
 # Download destination repository
@@ -41,7 +41,7 @@ git checkout -b autoupdate
 git add "defaults/main.yml" "README.md"
 git commit -m ':tada: automated upstream release update'
 echo -e "\e[32mPushing to autoupdate branch in ${DST}\e[0m"
-if ! git push -u autoupdate "https://${GITHUB_TOKEN}:@github.com/${DST}" --set-upstream autoupdate ; then
+if ! git push -u autoupdate "https://${GITHUB_TOKEN}:@github.com/${DST}"; then
     echo -e "\e[33mBranch is already on remote.\e[0m"
     exit 129
 fi

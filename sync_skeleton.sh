@@ -22,7 +22,7 @@ git config --global user.name "${GIT_USER}"
 git clone "https://github.com/cloudalchemy/skeleton.git" "skeleton"
 
 HERE=$(pwd)
-curl https://api.github.com/users/cloudalchemy/repos 2>/dev/null | jq '.[].name' | grep '^"ansible' | sed 's/"//g' | while read -r; do
+curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/users/cloudalchemy/repos 2>/dev/null | jq '.[].name' | grep '^"ansible' | sed 's/"//g' | while read -r; do
 	REPO="$REPLY"
 	echo -e "\e[32m Anylyzing $REPO\e[0m"
 
