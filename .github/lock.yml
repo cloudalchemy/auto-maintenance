@@ -9,7 +9,9 @@ daysUntilLock: 30
 skipCreatedBefore: false
 
 # Issues and pull requests with these labels will be ignored. Set to `[]` to disable
-exemptLabels: []
+exemptLabels:
+  - bug
+  - 
 
 # Label to add before locking, such as `outdated`. Set to `false` to disable
 lockLabel: false
@@ -24,7 +26,7 @@ lockComment: >
 setLockReason: false
 
 # Limit to only `issues` or `pulls`
-# only: issues
+only: issues
 
 # Optionally, specify configuration settings just for `issues` or `pulls`
 # issues:
