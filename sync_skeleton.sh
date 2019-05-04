@@ -39,6 +39,7 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 	cp -f ../skeleton/tox.ini ./
 	cp -f ../skeleton/test-requirements.txt ./
 	cp -f ../skeleton/.travis/releaser.sh ./.travis/releaser.sh
+	cp -f ../skeleton/.travis.yml ./.travis.yml
 	if [ -n "$(git status --porcelain)" ]; then
 		git add .
 		git commit -m ':robot: synchronize files from cloudalchemy/skeleton'
