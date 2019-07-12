@@ -31,7 +31,7 @@ if grep "_version: ${VERSION}" "${DST}/defaults/main.yml"; then
     exit 0
 fi
 sed -i "s/_version:.*$/_version: ${VERSION}/" "${DST}/defaults/main.yml"
-sed -i -r "s/_version.*[0-9].[0-9].[0-9]/_version\` | ${VERSION}/" "${DST}/README.md"
+sed -i -r "s/_version.*[0-9]+\.[0-9]+\.[0-9]+/_version\` | ${VERSION}/" "${DST}/README.md"
 
 # Push new version
 cd "${DST}"
