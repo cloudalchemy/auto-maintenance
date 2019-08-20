@@ -48,3 +48,8 @@ jobs:
       env:
         - SRC=prometheus/pushgateway
         - DST=cloudalchemy/ansible-pushgateway
+    - name: "process_exporter"
+      script: bash autocommiter.sh
+      env:
+        - SRC=ncabatoff/process-exporter
+        - DST=cloudalchemy/ansible-process_exporter
