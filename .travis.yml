@@ -53,3 +53,8 @@ jobs:
       env:
         - SRC=ncabatoff/process-exporter
         - DST=cloudalchemy/ansible-process_exporter
+    - name: "coredns"
+      script: bash autocommiter.sh
+      env:
+        - SRC=coredns/coredns
+        - DST=cloudalchemy/ansible-coredns
