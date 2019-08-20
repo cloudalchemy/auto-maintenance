@@ -27,6 +27,11 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 	REPO="$REPLY"
 	echo -e "\e[32m Anylyzing $REPO\e[0m"
 
+	# ansible-ebpf_exporter is archived
+	if [ "$REPO" == "ansible-ebpf_exporter" ]; then
+		continue
+	fi
+
 	cd "$HERE"
 	git clone "https://github.com/cloudalchemy/$REPO.git" "$REPO"
 	cd "$REPO"
@@ -52,11 +57,10 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 	grep -A1000 galaxy_tags meta/main.yml >> meta.yml.tmp
 	mv meta.yml.tmp meta/main.yml
 	# Sync bottom part of README.md
-	if [ "$REPO" != "ansible-ebpf_exporter" ]; then
-		grep -B1000 "## Local Testing" README.md | grep -v "## Local Testing" > README.md.tmp
-		grep -A1000 "## Local Testing" ../skeleton/ROLE_README.md >> README.md.tmp
-		mv README.md.tmp README.md
-	fi
+	grep -B1000 "## Local Testing" README.md | grep -v "## Local Testing" > README.md.tmp
+	grep -A1000 "## Local Testing" ../skeleton/ROLE_README.md >> README.md.tmp
+	sed -i "s/^- Ansible >=.*/$(grep '\- Ansible >=' ../skeleton/ROLE_README.md)/" README.md.tmp
+	mv README.md.tmp README.md
 
 	if [ -n "$(git status --porcelain)" ]; then
 		git add .
