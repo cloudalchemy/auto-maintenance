@@ -20,6 +20,7 @@ git config --global user.email "${GIT_MAIL}"
 git config --global user.name "${GIT_USER}"
 
 git clone "https://github.com/cloudalchemy/skeleton.git" "skeleton"
+LAST_COMMIT="$(cd skeleton && git rev-parse --short=8 HEAD)"
 
 HERE=$(pwd)
 curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/users/cloudalchemy/repos 2>/dev/null | jq '.[].name' | grep '^"ansible' | sed 's/"//g' | while read -r; do
@@ -40,9 +41,26 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 	cp -f ../skeleton/test-requirements.txt ./
 	cp -f ../skeleton/.travis/releaser.sh ./.travis/releaser.sh
 	cp -f ../skeleton/.travis.yml ./.travis.yml
+	mkdir -p molecule/default
+	cp -f ../skeleton/molecule/default/create.yml ./molecule/default/create.yml
+	cp -f ../skeleton/molecule/default/destroy.yml ./molecule/default/destroy.yml
+#	cp -f ../skeleton/molecule/default/molecule.yml ./molecule/default/molecule.yml # TODO(paulfantom): enable after all projects are able to run on fedora 30
+	# Sync parts of metadata file
+	sed -n '/---/,/description/p' meta/main.yml > meta.yml.tmp
+	grep "role_name:" meta/main.yml >> meta.yml.tmp || :
+	sed -n '/license/,/galaxy_tags/p' ../skeleton/meta/main.yml | grep -v "galaxy_tags" >> meta.yml.tmp
+	grep -A1000 galaxy_tags meta/main.yml >> meta.yml.tmp
+	mv meta.yml.tmp meta/main.yml
+	# Sync bottom part of README.md
+	if [ "$REPO" != "ansible-ebpf_exporter" ]; then
+		grep -B1000 "## Local Testing" README.md | grep -v "## Local Testing" > README.md.tmp
+		grep -A1000 "## Local Testing" ../skeleton/ROLE_README.md >> README.md.tmp
+		mv README.md.tmp README.md
+	fi
+
 	if [ -n "$(git status --porcelain)" ]; then
 		git add .
-		git commit -m ':robot: synchronize files from cloudalchemy/skeleton'
+		git commit -m ":robot: synchronize with last commit in cloudalchemy/skeleton (SHA: ${LAST_COMMIT})"
 		if git push "https://${GITHUB_TOKEN}:@github.com/cloudalchemy/${REPO}" --set-upstream skeleton; then
 			curl -u "$GIT_USER:$GITHUB_TOKEN" -X POST -d "$PAYLOAD" "https://api.github.com/repos/cloudalchemy/${REPO}/pulls"
 		fi
