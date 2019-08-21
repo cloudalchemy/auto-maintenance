@@ -50,10 +50,19 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 	cp -f ../skeleton/.travis/releaser.sh ./.travis/releaser.sh
 	cp -f ../skeleton/.travis/test.sh ./.travis/test.sh
 	cp -f ../skeleton/.travis.yml ./.travis.yml
-	mkdir -p molecule/default
+	mkdir -p molecule/default/tests
 	cp -f ../skeleton/molecule/default/create.yml ./molecule/default/create.yml
 	cp -f ../skeleton/molecule/default/destroy.yml ./molecule/default/destroy.yml
-#	cp -f ../skeleton/molecule/default/molecule.yml ./molecule/default/molecule.yml # TODO(paulfantom): enable after all projects are able to run on fedora 30
+	cp -f ../skeleton/molecule/default/molecule.yml ./molecule/default/molecule.yml
+	if [ -d "molecule/alternative" ]; then
+		cp -f ../skeleton/molecule/alternative/molecule.yml ./molecule/alternative/molecule.yml
+		if [ ! -f "molecule/alternative/prepare.yml" ]; then
+			cp -f ../skeleton/molecule/alternative/prepare.yml ./molecule/alternative/prepare.yml
+		fi
+	fi
+	if [ -d "molecule/latest" ]; then
+		cp -f ../skeleton/molecule/latest/molecule.yml ./molecule/latest/molecule.yml
+	fi
 	# Sync parts of metadata file
 	sed -n '/---/,/description/p' meta/main.yml > meta.yml.tmp
 	grep "role_name:" meta/main.yml >> meta.yml.tmp || :
