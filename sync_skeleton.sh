@@ -45,6 +45,7 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 	cp -f ../skeleton/tox.ini ./
 	cp -f ../skeleton/test-requirements.txt ./
 	cp -f ../skeleton/.travis/releaser.sh ./.travis/releaser.sh
+	cp -f ../skeleton/.travis/test.sh ./.travis/test.sh
 	cp -f ../skeleton/.travis.yml ./.travis.yml
 	mkdir -p molecule/default
 	cp -f ../skeleton/molecule/default/create.yml ./molecule/default/create.yml
