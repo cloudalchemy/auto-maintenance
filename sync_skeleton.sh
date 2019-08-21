@@ -4,10 +4,6 @@ set -euo pipefail
 
 GIT_MAIL="cloudalchemybot@gmail.com"
 GIT_USER="cloudalchemybot"
-PAYLOAD='{"title":"Synchronize files from cloudalchemy/skeleton",
-          "base":"master",
-          "head":"skeleton",
-          "body":"One or more files which should be in sync across cloudalchemy repos were changed either here or in [cloudalchemy/skeleton](https://github.com/cloudalchemy/skeleton).\nThis PR propagates files from [cloudalchemy/skeleton](https://github.com/cloudalchemy/skeleton). If something was changed here, please first modify skeleton repository.\n\nCC: @paulfantom."}'
 
 if [ -z "${GITHUB_TOKEN}" ]; then
 	echo -e "\e[31mGitHub token (GITHUB_TOKEN) not set. Terminating.\e[0m"
@@ -21,6 +17,13 @@ git config --global user.name "${GIT_USER}"
 
 git clone "https://github.com/cloudalchemy/skeleton.git" "skeleton"
 LAST_COMMIT="$(cd skeleton && git rev-parse --short=8 HEAD)"
+LAST_COMMIT_MSG="$(cd skeleton && git log -1 --pretty=%B | head -n1)"
+
+PAYLOAD="{\"title\":\"[REPO SYNC] $LAST_COMMIT_MSG\",
+          \"base\":\"master\",
+          \"head\":\"skeleton\",
+          \"body\":\"One or more files which should be in sync across cloudalchemy repos were changed either here or in [cloudalchemy/skeleton](https://github.com/cloudalchemy/skeleton).\nThis PR propagates files from [cloudalchemy/skeleton](https://github.com/cloudalchemy/skeleton). If something was changed here, please first modify skeleton repository.\n\nCC: @paulfantom.\"}'"
+
 
 HERE=$(pwd)
 curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/users/cloudalchemy/repos 2>/dev/null | jq '.[].name' | grep '^"ansible' | sed 's/"//g' | while read -r; do
@@ -65,7 +68,7 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 
 	if [ -n "$(git status --porcelain)" ]; then
 		git add .
-		git commit -m ":robot: synchronize with last commit in cloudalchemy/skeleton (SHA: ${LAST_COMMIT})"
+		git commit -m ":robot: sync with cloudalchemy/skeleton (SHA: ${LAST_COMMIT}): $LAST_COMMIT_MSG"
 		if git push "https://${GITHUB_TOKEN}:@github.com/cloudalchemy/${REPO}" --set-upstream skeleton; then
 			curl -u "$GIT_USER:$GITHUB_TOKEN" -X POST -d "$PAYLOAD" "https://api.github.com/repos/cloudalchemy/${REPO}/pulls"
 		fi
