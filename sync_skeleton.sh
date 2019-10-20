@@ -17,13 +17,17 @@ git config --global user.name "${GIT_USER}"
 
 git clone "https://github.com/cloudalchemy/skeleton.git" "skeleton"
 LAST_COMMIT="$(cd skeleton && git rev-parse --short=8 HEAD)"
-LAST_COMMIT_MSG="$(cd skeleton && git log -1 --pretty=%B | head -n1)"
+LAST_COMMIT_MSG="$(cd skeleton && git log -1 --pretty=%B | head -n1 | sed 's/"//g')"
 
-PAYLOAD="{\"title\":\"[REPO SYNC] $LAST_COMMIT_MSG\",
-          \"base\":\"master\",
-          \"head\":\"skeleton\",
-          \"body\":\"One or more files which should be in sync across cloudalchemy repos were changed either here or in [cloudalchemy/skeleton](https://github.com/cloudalchemy/skeleton).\nThis PR propagates files from [cloudalchemy/skeleton](https://github.com/cloudalchemy/skeleton). If something was changed here, please first modify skeleton repository.\n\nCC: @paulfantom.\"}'"
-
+PAYLOAD=$(cat <<EOF
+{
+  "title":"[REPO SYNC] ${LAST_COMMIT_MSG}",
+  "base":"master",
+  "head":"skeleton",
+  "body":"One or more files which should be in sync across cloudalchemy repos were changed either here or in [cloudalchemy/skeleton](https://github.com/cloudalchemy/skeleton).\nThis PR propagates files from [cloudalchemy/skeleton](https://github.com/cloudalchemy/skeleton). If something was changed here, please first modify skeleton repository.\n\nCC: @paulfantom."
+}
+EOF
+)
 
 HERE=$(pwd)
 curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/users/cloudalchemy/repos 2>/dev/null | jq '.[].name' | grep '^"ansible' | sed 's/"//g' | while read -r; do
