@@ -84,6 +84,8 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 		git commit -m ":robot: sync with cloudalchemy/skeleton (SHA: ${LAST_COMMIT}): $LAST_COMMIT_MSG"
 		if git push "https://${GITHUB_TOKEN}:@github.com/cloudalchemy/${REPO}" --set-upstream skeleton; then
 			curl -u "$GIT_USER:$GITHUB_TOKEN" -X POST -d "$PAYLOAD" "https://api.github.com/repos/cloudalchemy/${REPO}/pulls"
+		else
+			git push "https://${GITHUB_TOKEN}:@github.com/cloudalchemy/${REPO}" --set-upstream skeleton --force
 		fi
 	fi
 done
