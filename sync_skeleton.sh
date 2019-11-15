@@ -45,7 +45,7 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 	git checkout -b "skeleton"
 
 	# Replace files in target repo by ones from cloudalchemy/skeleton
-	cp -f ../skeleton/.github/* .github/
+	cp -rf ../skeleton/.github/* .github/
 	cp -f ../skeleton/.yamllint ./
 	cp -f ../skeleton/.gitignore ./
 	cp -f ../skeleton/CONTRIBUTING.md ./
