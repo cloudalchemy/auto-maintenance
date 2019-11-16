@@ -54,6 +54,7 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 	cp -f ../skeleton/.travis/releaser.sh ./.travis/releaser.sh
 	cp -f ../skeleton/.travis/test.sh ./.travis/test.sh
 	cp -f ../skeleton/.travis.yml ./.travis.yml
+	cp -f ../skeleton/.mergify.yml ./.mergify.yml
 	mkdir -p molecule/default/tests
 	cp -f ../skeleton/molecule/default/create.yml ./molecule/default/create.yml
 	cp -f ../skeleton/molecule/default/destroy.yml ./molecule/default/destroy.yml
