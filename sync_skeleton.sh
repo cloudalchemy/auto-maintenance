@@ -73,7 +73,6 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 	grep -B1000 "## Local Testing" README.md | grep -v "## Local Testing" > README.md.tmp
 	grep -A1000 "## Local Testing" ../skeleton/ROLE_README.md >> README.md.tmp
 	sed -i "s/^- Ansible >=.*/$(grep '\- Ansible >=' ../skeleton/ROLE_README.md)/" README.md.tmp
-	sed -i '/IRC/d' README.md.tmp
 	mv README.md.tmp README.md
 
 	if [ -n "$(git status --porcelain)" ]; then
