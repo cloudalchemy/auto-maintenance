@@ -19,6 +19,9 @@ markComment: >
 
 limitPerRun: 4
 
+pulls:
+  daysUntilClose: false
+
 issues:
   exemptLabels:
     - bug
