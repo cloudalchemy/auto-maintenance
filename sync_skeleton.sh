@@ -74,6 +74,8 @@ curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/
 	grep -A1000 "## Local Testing" ../skeleton/ROLE_README.md >> README.md.tmp
 	sed -i "s/^- Ansible >=.*/$(grep '\- Ansible >=' ../skeleton/ROLE_README.md)/" README.md.tmp
 	mv README.md.tmp README.md
+	# Conditionally add files
+	if [ ! -f TROUBLESHOOTING.md ]; then cp ../skeleton/TROUBLESHOOTING.md ./TROUBLESHOOTING.md; fi
 
 	if [ -n "$(git status --porcelain)" ]; then
 		git add .
