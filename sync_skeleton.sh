@@ -2,8 +2,9 @@
 
 set -euo pipefail
 
-GIT_MAIL="cloudalchemybot@gmail.com"
-GIT_USER="cloudalchemybot"
+#GIT_MAIL="cloudalchemybot@gmail.com"
+#GIT_USER="cloudalchemybot"
+GIT_USER="paulfantom"
 
 if [ -z "${GITHUB_TOKEN}" ]; then
 	echo -e "\e[31mGitHub token (GITHUB_TOKEN) not set. Terminating.\e[0m"
@@ -12,8 +13,8 @@ else
 	export GITHUB_TOKEN=$GITHUB_TOKEN
 fi
 
-git config --global user.email "${GIT_MAIL}"
-git config --global user.name "${GIT_USER}"
+#git config --global user.email "${GIT_MAIL}"
+#git config --global user.name "${GIT_USER}"
 
 git clone "https://github.com/cloudalchemy/skeleton.git" "skeleton"
 LAST_COMMIT="$(cd skeleton && git rev-parse --short=8 HEAD)"
@@ -32,6 +33,10 @@ EOF
 HERE=$(pwd)
 curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/users/cloudalchemy/repos 2>/dev/null | jq -r '.[] | select(.archived == false) | .name' | grep '^ansible' | while read -r; do
 	REPO="$REPLY"
+	if [ "${REPO}" == "ansible-pushprox" ]; then
+		echo -e "\e[33m Skipping $REPO\e[0m"
+		continue
+	fi
 	echo -e "\e[32m Anylyzing $REPO\e[0m"
 
 	cd "$HERE"
