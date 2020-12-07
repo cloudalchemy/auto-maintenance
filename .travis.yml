@@ -23,11 +23,11 @@ jobs:
       env:
         - SRC=prometheus/alertmanager
         - DST=cloudalchemy/ansible-alertmanager
-    - name: "node_exporter"
-      script: bash autocommiter.sh
-      env:
-        - SRC=prometheus/node_exporter
-        - DST=cloudalchemy/ansible-node-exporter
+    #- name: "node_exporter"
+    #  script: bash autocommiter.sh
+    #  env:
+    #    - SRC=prometheus/node_exporter
+    #    - DST=cloudalchemy/ansible-node-exporter
     - name: "blackbox_exporter"
       script: bash autocommiter.sh
       env:
