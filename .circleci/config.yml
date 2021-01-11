@@ -1,0 +1,71 @@
+---
+version: 2.1
+
+executors:
+  python:
+    docker:
+      - image: cimg/python:3.9
+
+commands:
+  autocommit:
+    parameters:
+      source_repo:
+        type: string
+      dest_repo:
+        type: string
+    steps:
+      - run:
+          name: Autocommitting
+          command: |
+            export SRC=<< parameters.source_repo >> \
+            export DST=<< parameters.dest_repo >> \
+            bash autocommiter.sh
+
+jobs:
+  autocommit:
+    executor: python
+    steps:
+    - checkout
+    - autocommit:
+        source_repo: prometheus/alertmanager
+        dest_repo: cloudalchemy/ansible-alertmanager
+    - autocommit:
+        source_repo: prometheus/prometheus
+        dest_repo: cloudalchemy/ansible-prometheus
+    - autocommit:
+        source_repo: prometheus/blackbox_exporter
+        dest_repo: cloudalchemy/ansible-blackbox-exporter
+    - autocommit:
+        source_repo: prometheus/snmp_exporter
+        dest_repo: cloudalchemy/ansible-snmp-exporter
+    - autocommit:
+        source_repo: prometheus/mysqld_exporter
+        dest_repo: cloudalchemy/ansible-mysqld-exporter
+    - autocommit:
+        source_repo: prometheus/pushgateway
+        dest_repo: cloudalchemy/ansible-pushgateway
+    - autocommit:
+        source_repo: ncabatoff/process-exporter
+        dest_repo: cloudalchemy/ansible-process_exporter
+    - autocommit:
+        source_repo: coredns/coredns
+        dest_repo: cloudalchemy/ansible-coredns
+
+workflows:
+  version: 2
+  update:
+    jobs:
+    - autocommit:
+        filters:
+          branches:
+            only: master
+  daily:
+    jobs:
+    - autocommit
+    triggers:
+     - schedule:
+         cron: "22 14 * * *"
+         filters:
+           branches:
+             only:
+             - master
