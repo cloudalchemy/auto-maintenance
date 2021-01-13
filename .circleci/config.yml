@@ -15,7 +15,7 @@ commands:
         type: string
     steps:
       - run:
-          name: Autocommitting
+          name: "Autocommitting << parameters.dest_repo >>"
           command: bash autocommiter.sh "<< parameters.source_repo >>" "<< parameters.dest_repo >>"
 
 jobs:
