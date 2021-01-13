@@ -53,12 +53,14 @@ workflows:
   update:
     jobs:
     - autocommit:
+        context: release
         filters:
           branches:
             only: master
   daily:
     jobs:
-    - autocommit
+    - autocommit:
+        context: release
     triggers:
      - schedule:
          cron: "22 14 * * *"
