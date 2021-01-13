@@ -16,10 +16,7 @@ commands:
     steps:
       - run:
           name: Autocommitting
-          command: |
-            export SRC=<< parameters.source_repo >> \
-            export DST=<< parameters.dest_repo >> \
-            bash autocommiter.sh
+          command: bash autocommiter.sh "<< parameters.source_repo >>" "<< parameters.dest_repo >>"
 
 jobs:
   autocommit:
