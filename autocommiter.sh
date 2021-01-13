@@ -5,18 +5,26 @@ set -euo pipefail
 GIT_MAIL="cloudalchemybot@gmail.com"
 GIT_USER="cloudalchemybot"
 
+if [[ $# -ne 2 ]]; then
+    echo "usage $(basename $0) <source repo> <destination repo>"
+    exit 1
+fi
+
+SRC="$1"
+DST="$2"
+
 if [ -z "${GITHUB_TOKEN}" ]; then
     echo -e "\e[31mGitHub token (GITHUB_TOKEN) not set. Terminating.\e[0m"
     exit 128
 fi
 
 if [ -z "${SRC}" ]; then
-    echo -e "\e[31mNo source repository set (SRC). Terminating.\e[0m"
+    echo -e "\e[31mNo source repository set. Terminating.\e[0m"
     exit 128
 fi
 
 if [ -z "${DST}" ]; then
-    echo -e "\e[31mNo destination repository set (SRC). Terminating.\e[0m"
+    echo -e "\e[31mNo destination repository set. Terminating.\e[0m"
     exit 128
 fi
 
