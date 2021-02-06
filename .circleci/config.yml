@@ -34,7 +34,7 @@ jobs:
         dest_repo: cloudalchemy/ansible-blackbox-exporter
     - autocommit:
         source_repo: prometheus/memcached_exporter
-        dest_repo: cloudalchemy/ansible-memcached
+        dest_repo: cloudalchemy/ansible-memcached-exporter
     - autocommit:
         source_repo: prometheus/mysqld_exporter
         dest_repo: cloudalchemy/ansible-mysqld-exporter
