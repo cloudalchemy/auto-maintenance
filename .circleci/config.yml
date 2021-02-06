@@ -39,6 +39,9 @@ jobs:
         source_repo: prometheus/mysqld_exporter
         dest_repo: cloudalchemy/ansible-mysqld-exporter
     - autocommit:
+        source_repo: prometheus/node_exporter
+        dest_repo: cloudalchemy/ansible-node-exporter
+    - autocommit:
         source_repo: prometheus/pushgateway
         dest_repo: cloudalchemy/ansible-pushgateway
     - autocommit:
