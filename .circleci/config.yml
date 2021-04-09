@@ -57,12 +57,48 @@ jobs:
         source_repo: ncabatoff/process-exporter
         dest_repo: cloudalchemy/ansible-process_exporter
 
+  build-image:
+    executor: python
+    steps:
+    - checkout
+    - setup_remote_docker
+    - run: docker build -t quay.io/cloudalchemy/publisher:latest .
+    - run: docker images
+    - run: mkdir docker-images && docker save -o docker-images/publisher quay.io/cloudalchemy/publisher:latest
+    - persist_to_workspace:
+        root: .
+        paths:
+        - docker-images
+
+  publish-image:
+    executor: python
+    steps:
+    - checkout
+    - setup_remote_docker
+    - attach_workspace:
+        at: .
+    - run: for i in docker-images/*; do docker load -i "$i" ; done
+    - run: docker images
+    - run: docker login -u $QUAY_LOGIN -p $QUAY_PASSWORD quay.io
+    - run: docker push -a quay.io/cloudalchemy/publisher
+
 workflows:
   version: 2
   update:
     jobs:
     - autocommit:
         context: release
+        filters:
+          branches:
+            only: master
+    - build-image:
+        filters:
+          tags:
+            only: /.*/
+    - publish-image:
+        context: quay.io
+        requires:
+        - build-image
         filters:
           branches:
             only: master
