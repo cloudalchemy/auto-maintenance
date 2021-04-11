@@ -27,6 +27,13 @@ if ! git config --global user.name "${GIT_USER:-cloudalchemybot}"; then
   exit 1
 fi
 
+galaxy_meta="$(yq eval '.galaxy_info.author + "/" + .galaxy_info.role_name' meta/main.yml )"
+export GALAXY_PROJECT="${GALAXY_PROJECT:-${galaxy_meta}}"
+if [[ -z "${GALAXY_PROJECT}" ]]; then
+  echo "ERROR: Missing GALAXY_PROJECT env or couldn't get galaxy_info from meta/main.yml"
+  exit 1
+fi
+
 latest_tag="$(git semver)"
 if [[ -z "${latest_tag}" ]]; then
   echo "ERROR: Couldn't get latest tag from git semver, try 'pip install git-semver'" 2>&1
@@ -63,7 +70,7 @@ run_git_chglog() {
     --repository-url "${project_url}" "$@"
 }
 
-if ! run_git_chglog CHANGELOG.md --new-tag "${new_tag}"; then
+if ! run_git_chglog CHANGELOG.md --next-tag "${new_tag}"; then
   echo "ERROR: Generating CHANGELOG.md failed"
   exit 1
 fi

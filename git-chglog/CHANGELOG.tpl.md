@@ -1,7 +1,7 @@
 # Change Log
 
 {{ if .Versions -}}
-## [**Next release**](https://galaxy.ansible.com/cloudalchemy/prometheus)
+## [**Next release**](https://galaxy.ansible.com/{{ env "GALAXY_PROJECT" }})
 {{ if .Unreleased.CommitGroups -}}
 {{ range .Unreleased.CommitGroups -}}
 ### {{ .Title }}
