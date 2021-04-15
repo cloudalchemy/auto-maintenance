@@ -57,6 +57,12 @@ jobs:
         source_repo: ncabatoff/process-exporter
         dest_repo: cloudalchemy/ansible-process_exporter
 
+  sync_skeleton:
+    executor: python
+    steps:
+      - checkout
+      - run: bash sync_skeleton.sh
+
   build-image:
     executor: python
     steps:
@@ -91,6 +97,11 @@ workflows:
         filters:
           branches:
             only: master
+    - sync_skeleton:
+        context: release
+        filters:
+          branches:
+            only: master
     - build-image:
         filters:
           tags:
@@ -105,6 +116,8 @@ workflows:
   daily:
     jobs:
     - autocommit:
+        context: release
+    - sync_skeleton:
         context: release
     triggers:
      - schedule:
