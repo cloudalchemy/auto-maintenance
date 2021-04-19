@@ -1,22 +1,51 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# vim: ts=2 et
 
-set -euo pipefail
+set -uo pipefail
 
-#GIT_MAIL="cloudalchemybot@gmail.com"
-#GIT_USER="cloudalchemybot"
-GIT_USER="paulfantom"
+git_mail="${GIT_MAIL:-cloudalchemybot@gmail.com}"
+git_user="${GIT_USER:-cloudalchemybot}"
 
-if [ -z "${GITHUB_TOKEN}" ]; then
-	echo -e "\e[31mGitHub token (GITHUB_TOKEN) not set. Terminating.\e[0m"
-	exit 1
-else
-	export GITHUB_TOKEN=$GITHUB_TOKEN
+color_red='\e[31m'
+color_green='\e[32m'
+color_yellow='\e[33m'
+color_none='\e[0m'
+
+echo_red() {
+  echo -e "${color_red}$*${color_none}"
+}
+
+echo_green() {
+  echo -e "${color_green}$*${color_none}"
+}
+
+echo_yellow() {
+  echo -e "${color_yellow}$*${color_none}"
+}
+
+github_token="${GH_TOKEN:-}"
+if [[ -z "${github_token}" ]]; then
+  echo_red 'GitHub token (GH_TOKEN) not set. Terminating.'
+  exit 1
 fi
 
-#git config --global user.email "${GIT_MAIL}"
-#git config --global user.name "${GIT_USER}"
+github_api() {
+  local url
+  url="https://api.github.com/${1}"
+  shift 1
+  curl --retry 5 --silent --fail -u "${git_user}:${github_token}" "${url}" "$@"
+}
 
-git clone "https://github.com/cloudalchemy/skeleton.git" "skeleton"
+# Only update git config if we're in bot mode.
+if [[ "${git_user}" == 'cloudalchemybot' ]]; then
+  git config --global user.email "${git_mail}"
+  git config --global user.name "${git_user}"
+fi
+
+if [[ ! -d 'skeleton' ]]; then
+  echo 'Cloning skeleton'
+  git clone --quiet --depth 1 'https://github.com/cloudalchemy/skeleton.git' 'skeleton'
+fi
 LAST_COMMIT="$(cd skeleton && git rev-parse --short=8 HEAD)"
 LAST_COMMIT_MSG="$(cd skeleton && git log -1 --pretty=%B | head -n1 | sed 's/"//g')"
 
@@ -30,65 +59,90 @@ PAYLOAD=$(cat <<EOF
 EOF
 )
 
+default_files='
+  .gitignore
+  .yamllint
+  CONTRIBUTING.md
+  test-requirements.txt
+  .mergify.yml
+'
+
+add_missing_files='
+  TROUBLESHOOTING.md
+'
+
+update_files='
+  molecule/default/molecule.yml
+  molecule/alternative/molecule.yml
+  molecule/latest/molecule.yml
+'
+
+remove_files='
+  .travis
+  .travis.yml
+  tox.ini
+'
+
 HERE=$(pwd)
-curl --retry 5 --silent -u "${GIT_USER}:${GITHUB_TOKEN}" https://api.github.com/users/cloudalchemy/repos 2>/dev/null | jq -r '.[] | select(.archived == false) | .name' | grep '^ansible' | while read -r; do
-	REPO="$REPLY"
-	if [ "${REPO}" == "ansible-pushprox" ]; then
-		echo -e "\e[33m Skipping $REPO\e[0m"
-		continue
-	fi
-	echo -e "\e[32m Anylyzing $REPO\e[0m"
+github_api users/cloudalchemy/repos 2>/dev/null |
+  jq -r '.[] | select(.archived == false and .fork == false and (.name | test("^ansible-.*$"))) | .name' |
+  while read -r; do
+  REPO="${REPLY}"
+  if [[ "${REPO}" == 'ansible-pushprox' ]]; then
+    echo_yellow "Skipping ${REPO}"
+    continue
+  fi
+  echo_green "Analyzing ${REPO}"
 
-	cd "$HERE"
-	git clone "https://github.com/cloudalchemy/$REPO.git" "$REPO"
-	cd "$REPO"
-	git checkout -b "skeleton"
+  cd "${HERE}" || exit 1
+  git clone --quiet --depth 1 "https://github.com/cloudalchemy/${REPO}.git" "${REPO}"
+  cd "${REPO}" || exit 1
+  git checkout -b "skeleton"
 
-	# Replace files in target repo by ones from cloudalchemy/skeleton
-	cp -rf ../skeleton/.github/* .github/
-	cp -f ../skeleton/.yamllint ./
-	cp -f ../skeleton/.gitignore ./
-	cp -f ../skeleton/CONTRIBUTING.md ./
-	cp -f ../skeleton/tox.ini ./
-	cp -f ../skeleton/test-requirements.txt ./
-	cp -f ../skeleton/.travis/releaser.sh ./.travis/releaser.sh
-	cp -f ../skeleton/.travis/test.sh ./.travis/test.sh
-	cp -f ../skeleton/.travis.yml ./.travis.yml
-	cp -f ../skeleton/.mergify.yml ./.mergify.yml
-	mkdir -p molecule/default/tests
-	cp -f ../skeleton/molecule/default/create.yml ./molecule/default/create.yml
-	cp -f ../skeleton/molecule/default/destroy.yml ./molecule/default/destroy.yml
-	cp -f ../skeleton/molecule/default/molecule.yml ./molecule/default/molecule.yml
-	if [ -d "molecule/alternative" ]; then
-		cp -f ../skeleton/molecule/alternative/molecule.yml ./molecule/alternative/molecule.yml
-		if [ ! -f "molecule/alternative/prepare.yml" ]; then
-			cp -f ../skeleton/molecule/alternative/prepare.yml ./molecule/alternative/prepare.yml
-		fi
-	fi
-	if [ -d "molecule/latest" ]; then
-		cp -f ../skeleton/molecule/latest/molecule.yml ./molecule/latest/molecule.yml
-	fi
-	# Sync parts of metadata file
-	sed -n '/---/,/description/p' meta/main.yml > meta.yml.tmp
-	grep "role_name:" meta/main.yml >> meta.yml.tmp || :
-	sed -n '/license/,/galaxy_tags/p' ../skeleton/meta/main.yml | grep -v "galaxy_tags" >> meta.yml.tmp
-	grep -A1000 galaxy_tags meta/main.yml >> meta.yml.tmp
-	mv meta.yml.tmp meta/main.yml
-	# Sync bottom part of README.md
-	grep -B1000 "## Local Testing" README.md | grep -v "## Local Testing" > README.md.tmp
-	grep -A1000 "## Local Testing" ../skeleton/ROLE_README.md >> README.md.tmp
-	sed -i "s/^- Ansible >=.*/$(grep '\- Ansible >=' ../skeleton/ROLE_README.md)/" README.md.tmp
-	mv README.md.tmp README.md
-	# Conditionally add files
-	if [ ! -f TROUBLESHOOTING.md ]; then cp ../skeleton/TROUBLESHOOTING.md ./TROUBLESHOOTING.md; fi
+  # Replace files in target repo by ones from cloudalchemy/skeleton.
+  cp -f ../skeleton/circleci-config.yml .circleci/config.yml
+  cp -rf ../skeleton/.github/* .github/
+  for f in ${default_files}; do
+    cp -f "../skeleton/$f" "./$f"
+  done
+  # Sync parts of metadata file.
+  sed -n '/---/,/author/p' meta/main.yml > meta.yml.tmp
+  grep -E "(description|role_name):" meta/main.yml >> meta.yml.tmp || :
+  sed -n '/license/,/galaxy_tags/p' ../skeleton/meta/main.yml | grep -v "galaxy_tags" >> meta.yml.tmp
+  grep -A1000 galaxy_tags meta/main.yml >> meta.yml.tmp
+  mv meta.yml.tmp meta/main.yml
+  # Sync bottom part of README.md.
+  grep -B1000 "## Local Testing" README.md | grep -v "## Local Testing" > README.md.tmp
+  grep -A1000 "## Local Testing" ../skeleton/ROLE_README.md >> README.md.tmp
+  sed -i "s/^- Ansible >=.*/$(grep '\- Ansible >=' ../skeleton/ROLE_README.md)/" README.md.tmp
+  mv README.md.tmp README.md
+  # Add if missing files.
+  for f in ${add_missing_files}; do
+    if [[ ! -f "$f" ]]; then
+      cp "../skeleton/$f" "./$f"
+    fi
+  done
+  # Update if exists files.
+  for f in ${update_files}; do
+    if [[ -f "$f" ]]; then
+      cp "../skeleton/$f" "./$f"
+    fi
+  done
+  # Cleanup old files.
+  for f in ${remove_files}; do
+    if [[ -a tox.ini ]]; then
+       git rm -r "$f"
+    fi
+  done
 
-	if [ -n "$(git status --porcelain)" ]; then
-		git add .
-		git commit -m ":robot: sync with cloudalchemy/skeleton (SHA: ${LAST_COMMIT}): $LAST_COMMIT_MSG"
-		if git push "https://${GITHUB_TOKEN}:@github.com/cloudalchemy/${REPO}" --set-upstream skeleton; then
-			curl -u "$GIT_USER:$GITHUB_TOKEN" -X POST -d "$PAYLOAD" "https://api.github.com/repos/cloudalchemy/${REPO}/pulls"
-		else
-			git push "https://${GITHUB_TOKEN}:@github.com/cloudalchemy/${REPO}" --set-upstream skeleton --force
-		fi
-	fi
+  if [[ -n "$(git status --porcelain)" ]]; then
+    git add .
+    git commit -m ":robot: sync with cloudalchemy/skeleton (SHA: ${LAST_COMMIT}): ${LAST_COMMIT_MSG}"
+    if git push "https://${git_user}:${github_token}@github.com/cloudalchemy/${REPO}" --set-upstream skeleton > /dev/null 2>&1; then
+      pr_link=$(github_api "repos/cloudalchemy/${REPO}/pulls" -X POST -d "${PAYLOAD}" | jq -r '.html_url')
+      echo_green "PR URL: ${pr_link}"
+    else
+      git push "https://${git_user}:${github_token}@github.com/cloudalchemy/${REPO}" --set-upstream skeleton --force > /dev/null 2>&1
+    fi
+  fi
 done
