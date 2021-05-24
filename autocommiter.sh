@@ -47,7 +47,7 @@ git config user.email "${GIT_MAIL}"
 git config user.name "${GIT_USER}"
 git checkout -b autoupdate
 git add "defaults/main.yml" "README.md"
-git commit -m ':tada: automated upstream release update'
+git commit -m '[patch] :tada: automated upstream release update'
 echo -e "\e[32mPushing to autoupdate branch in ${DST}\e[0m"
 if ! git push "https://${GH_TOKEN}:@github.com/${DST}" --set-upstream autoupdate; then
     echo -e "\e[33mBranch is already on remote.\e[0m"
