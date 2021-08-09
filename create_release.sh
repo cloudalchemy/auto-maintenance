@@ -52,8 +52,6 @@ case "${git_log}" in
   *"[patch]"*|*"[fix]"*|*"[bugfix]"* )   new_tag=$(git semver --next-patch) ;;
 esac
 
-new_tag=$(git semver --next-major)
-
 if [[ "${new_tag}" == 'none' ]]; then
   echo "Semver keyword not detected. No new release"
   exit 0
